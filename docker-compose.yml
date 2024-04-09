@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dbname
+    ports:
+      - "6767:5432"
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    restart: on-failure
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    command: [ "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000" ]
+
+  test:
+    build: .
+    depends_on:
+      - web
+      - db
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    command: [ "pytest" ]
